@@ -1,0 +1,6 @@
+id,name,license_no,license_category,license_expiry,contact_number,safety_score,trips_completed,status
+1,Alex,DL-88213,LMV,2028-12-01,98765xxxxx,96,34,Available
+2,John,DL-44120,HMV,2025-03-01,98220xxxxx,81,52,Suspended
+3,Priya,DL-77031,LMV,2027-08-01,99110xxxxx,99,61,On Trip
+4,Suresh,DL-90045,HMV,2027-01-01,97440xxxxx,88,47,Off Duty
+5,Karan,DL-51290,LMV,2027-11-01,96650xxxxx,93,28,On Trip

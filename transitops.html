@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransitOps — Smart Transport Operations Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0E1316;
+  --sidebar:#111719;
+  --sidebar-line:#1F2A2E;
+  --sidebar-active:#1B2427;
+  --panel:#FFFFFF;
+  --panel-alt:#F3F5F4;
+  --page-bg:#EDEFEE;
+  --ink:#141A1D;
+  --muted:#5C6B70;
+  --faint:#8B979A;
+  --line:#DEE3E2;
+  --amber:#F5A623;
+  --amber-deep:#B87613;
+  --amber-bg:#FDF1DD;
+  --green:#2E7D4F;
+  --green-bg:#E3F2E9;
+  --blue:#3B6C90;
+  --blue-bg:#E5EFF5;
+  --red:#C4433D;
+  --red-bg:#FBE8E6;
+  --gray-chip:#EEF0EF;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(15,20,22,.04), 0 6px 20px rgba(15,20,22,.06);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--page-bg);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+a{color:inherit;}
+::selection{background:var(--amber);color:#1a1200;}
+
+/* ---------- LOGIN ---------- */
+#loginScreen{
+  min-height:100vh;
+  display:flex;
+  background:var(--sidebar);
+  position:relative;
+  overflow:hidden;
+}
+#loginScreen::before{
+  content:"";
+  position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(245,166,35,.05) 0 1px, transparent 1px 88px),
+    repeating-linear-gradient(0deg, rgba(245,166,35,.05) 0 1px, transparent 1px 88px);
+  pointer-events:none;
+}
+.login-brand{
+  flex:1.1;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:56px 64px;
+  color:#EDEFEC;
+  position:relative;z-index:1;
+}
+.login-brand .mark{display:flex;align-items:center;gap:10px;}
+.login-brand .mark .dot{width:12px;height:12px;background:var(--amber);border-radius:2px;transform:rotate(45deg);}
+.login-brand .mark span{font-family:'Space Grotesk';font-weight:700;letter-spacing:.5px;font-size:20px;}
+.login-brand h1{font-size:44px;line-height:1.08;margin:0 0 14px;font-weight:600;max-width:520px;}
+.login-brand p{color:#A9B3AF;max-width:420px;line-height:1.6;font-size:15px;}
+.login-roles{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px;}
+.role-pill{
+  border:1px solid #2A3538;padding:7px 14px;border-radius:999px;
+  font-size:12.5px;color:#C7CFCC;letter-spacing:.2px;
+}
+.login-foot{color:#5E6B67;font-size:12px;letter-spacing:.4px;font-family:'IBM Plex Mono';}
+.login-panel-wrap{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);position:relative;z-index:1;
+  border-left:1px solid #1c2528;
+}
+.login-panel{width:100%;max-width:380px;padding:20px;}
+.login-panel h2{margin:0 0 6px;font-size:24px;}
+.login-panel .sub{color:var(--muted);font-size:13.5px;margin-bottom:28px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:11px;letter-spacing:.08em;font-weight:600;color:var(--faint);margin-bottom:7px;text-transform:uppercase;}
+.field input,.field select{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
+  font-size:14.5px;background:#fff;color:var(--ink);
+}
+.field input:focus,.field select:focus,button:focus-visible,.nav-item:focus-visible{outline:2px solid var(--amber);outline-offset:1px;}
+.login-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:22px;}
+.login-row a{color:var(--blue);text-decoration:none;font-weight:500;}
+.btn{
+  border:none;border-radius:8px;padding:11px 18px;font-weight:600;font-size:14px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s ease, opacity .15s;
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--ink);color:#fff;width:100%;}
+.btn-primary:hover{opacity:.88;}
+.btn-amber{background:var(--amber);color:#241A03;}
+.btn-amber:hover{background:#e6981a;}
+.btn-ghost{background:var(--gray-chip);color:var(--ink);}
+.btn-ghost:hover{background:#e4e7e6;}
+.btn-danger{background:var(--red-bg);color:var(--red);}
+.btn-line{background:transparent;border:1px solid var(--line);color:var(--ink);}
+.err-box{background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:16px;display:none;}
+
+/* ---------- APP SHELL ---------- */
+#app{display:none;min-height:100vh;}
+.shell{display:grid;grid-template-columns:224px 1fr;min-height:100vh;}
+.sidebar{
+  background:var(--sidebar);color:#C9D0CD;
+  display:flex;flex-direction:column;padding:20px 14px;position:sticky;top:0;height:100vh;
+}
+.brand{display:flex;align-items:center;gap:9px;padding:6px 10px 22px;}
+.brand .dot{width:10px;height:10px;background:var(--amber);border-radius:2px;transform:rotate(45deg);flex:none;}
+.brand span{font-family:'Space Grotesk';font-weight:700;color:#F2F4F1;letter-spacing:.3px;font-size:16.5px;}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:8px;
+  font-size:13.8px;color:#AEB8B4;text-decoration:none;margin-bottom:2px;border:none;background:transparent;
+  width:100%;text-align:left;
+}
+.nav-item svg{flex:none;opacity:.85;}
+.nav-item:hover{background:var(--sidebar-active);color:#EDEFEC;}
+.nav-item.active{background:var(--sidebar-active);color:#fff;box-shadow:inset 3px 0 0 var(--amber);}
+.nav-item.locked{opacity:.35;cursor:not-allowed;}
+.nav-item.locked:hover{background:transparent;color:#AEB8B4;}
+.sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid var(--sidebar-line);}
+.user-chip{display:flex;align-items:center;gap:10px;padding:8px 10px;}
+.avatar{width:32px;height:32px;border-radius:8px;background:var(--amber);color:#241A03;font-weight:700;font-size:12.5px;display:flex;align-items:center;justify-content:center;flex:none;}
+.user-chip .name{font-size:13px;color:#F0F2EF;font-weight:600;}
+.user-chip .role{font-size:11px;color:#8B978F;}
+.logout-btn{width:100%;margin-top:8px;background:transparent;border:1px solid var(--sidebar-line);color:#AEB8B4;padding:8px;border-radius:8px;font-size:12.5px;}
+.logout-btn:hover{background:var(--sidebar-active);color:#fff;}
+
+.main{display:flex;flex-direction:column;min-height:100vh;}
+.topbar{
+  height:60px;background:var(--panel);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:5;
+}
+.topbar .search{
+  display:flex;align-items:center;gap:8px;background:var(--panel-alt);border-radius:8px;padding:8px 12px;width:280px;color:var(--faint);font-size:13px;
+}
+.page{padding:26px 30px 60px;flex:1;}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;gap:16px;flex-wrap:wrap;}
+.page-head h1{font-size:23px;margin:0 0 4px;}
+.page-head .desc{color:var(--muted);font-size:13.5px;}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.03em;
+  padding:4px 10px;border-radius:999px;text-transform:uppercase;
+}
+.b-green{background:var(--green-bg);color:var(--green);}
+.b-blue{background:var(--blue-bg);color:var(--blue);}
+.b-red{background:var(--red-bg);color:var(--red);}
+.b-gray{background:var(--gray-chip);color:var(--muted);}
+.b-amber{background:var(--amber-bg);color:var(--amber-deep);}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:22px;}
+.kpi-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px;box-shadow:var(--shadow);}
+.kpi-card .lbl{font-size:10.5px;letter-spacing:.07em;color:var(--faint);text-transform:uppercase;font-weight:600;margin-bottom:10px;}
+.kpi-card .val{font-family:'Space Grotesk';font-size:26px;font-weight:700;}
+.kpi-card .val.amber{color:var(--amber-deep);}
+.kpi-card .val.green{color:var(--green);}
+.kpi-card .val.red{color:var(--red);}
+.kpi-card .val.blue{color:var(--blue);}
+
+.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start;}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line);}
+.panel-head h3{margin:0;font-size:14.5px;letter-spacing:.02em;}
+.panel-body{padding:16px 18px;}
+
+/* filters bar */
+.filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filters select, .filters input{
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;background:#fff;color:var(--ink);
+}
+.filters .fill{flex:1;}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13.3px;}
+thead th{
+  text-align:left;font-size:10.5px;letter-spacing:.06em;color:var(--faint);text-transform:uppercase;
+  padding:9px 12px;border-bottom:1px solid var(--line);font-weight:600;background:var(--panel-alt);
+}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle;}
+tbody tr:hover{background:var(--panel-alt);}
+tbody tr:last-child td{border-bottom:none;}
+td.reg{font-family:'IBM Plex Mono';font-weight:500;}
+.row-actions{display:flex;gap:6px;}
+.icon-btn{background:var(--gray-chip);border:none;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;}
+.icon-btn:hover{background:#e2e5e4;}
+
+/* manifest tag - signature element */
+.tag{
+  display:flex;align-items:stretch;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;margin-bottom:10px;
+}
+.tag .stripe{width:5px;flex:none;}
+.tag .stripe.dispatched{background:var(--blue);}
+.tag .stripe.draft{background:var(--faint);}
+.tag .stripe.completed{background:var(--green);}
+.tag .stripe.cancelled{background:var(--red);}
+.tag-body{padding:11px 14px;flex:1;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.tag-left .id{font-family:'IBM Plex Mono';font-weight:600;font-size:12.5px;color:var(--muted);}
+.tag-left .route{font-size:13.5px;font-weight:500;margin-top:3px;}
+.tag-left .route .arrow{color:var(--faint);margin:0 6px;font-family:'IBM Plex Mono';}
+.tag-right{text-align:right;font-size:11.5px;color:var(--muted);white-space:nowrap;}
+
+.perf-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;}
+.dot-green{background:var(--green);}
+.dot-blue{background:var(--blue);}
+.dot-gray{background:var(--faint);}
+.dot-red{background:var(--red);}
+
+/* forms in panels */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid .full{grid-column:1/-1;}
+.form-grid label{display:block;font-size:11px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.form-grid input, .form-grid select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-size:13.5px;}
+.hint{font-size:12px;color:var(--muted);margin-top:6px;}
+.validation-block{border-radius:8px;padding:12px 14px;margin-top:14px;font-size:13px;}
+.validation-ok{background:var(--green-bg);color:var(--green);}
+.validation-bad{background:var(--red-bg);color:var(--red);}
+
+/* modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(14,19,22,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:480px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal h3{margin:0 0 4px;font-size:17px;}
+.modal .sub{color:var(--muted);font-size:12.5px;margin-bottom:18px;}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+
+.empty{padding:34px 16px;text-align:center;color:var(--muted);font-size:13.5px;}
+.chip-toggle{display:flex;gap:6px;flex-wrap:wrap;}
+.chip-toggle button{
+  border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12px;color:var(--muted);
+}
+.chip-toggle button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;font-size:13.5px;
+  box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:80;display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(8px);transition:.25s;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+
+.rbac-table td, .rbac-table th{text-align:center;}
+.rbac-table td:first-child, .rbac-table th:first-child{text-align:left;}
+.tick{color:var(--green);font-weight:700;}
+.dash{color:var(--faint);}
+
+@media (max-width:1100px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen">
+  <div class="login-brand">
+    <div class="mark"><div class="dot"></div><span>TRANSITOPS</span></div>
+    <div>
+      <h1>One login,<br>four roles.</h1>
+      <p>Vehicles, drivers, dispatch, maintenance and cost tracking — in a single operations console built for fleet teams that outgrew spreadsheets.</p>
+      <div class="login-roles">
+        <div class="role-pill">Fleet Manager</div>
+        <div class="role-pill">Dispatcher</div>
+        <div class="role-pill">Safety Officer</div>
+        <div class="role-pill">Financial Analyst</div>
+      </div>
+    </div>
+    <div class="login-foot">TRANSITOPS © 2026 · RBAC ENABLED</div>
+  </div>
+  <div class="login-panel-wrap">
+    <div class="login-panel">
+      <h2>Sign in to your account</h2>
+      <div class="sub">Enter your credentials to continue.</div>
+      <div class="err-box" id="loginErr">Enter an email and password to continue.</div>
+      <div class="field">
+        <label>Email</label>
+        <input id="loginEmail" type="email" value="raven.k@transitops.in" placeholder="you@company.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="loginPass" type="password" value="••••••••" placeholder="Password">
+      </div>
+      <div class="field">
+        <label>Role (RBAC)</label>
+        <select id="loginRole">
+          <option>Dispatcher</option>
+          <option>Fleet Manager</option>
+          <option>Safety Officer</option>
+          <option>Financial Analyst</option>
+        </select>
+      </div>
+      <div class="login-row">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);"><input type="checkbox" style="width:auto;" checked> Remember me</label>
+        <a href="#">Forgot password?</a>
+      </div>
+      <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
+      <div class="hint" style="margin-top:16px;">Access is scoped by role after login — each role lands on the pages it needs.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <div class="shell">
+    <div class="sidebar" id="sidebarNav"></div>
+    <div class="main">
+      <div class="topbar">
+        <div class="search">🔍 <span>Search vehicles, drivers, trips…</span></div>
+        <div class="user-chip" id="topUserChip" style="padding:0;"></div>
+      </div>
+      <div class="page" id="pageRoot"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBody"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   TRANSITOPS — in-memory demo data layer + business rules
+   ============================================================ */
+
+const ICONS = {
+  dashboard:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>',
+  fleet:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h13V7H3v10zM16 10h3l3 3v4h-6"/><circle cx="7" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/></svg>',
+  drivers:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
+  trips:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h13M11 6l6 6-6 6"/><circle cx="19" cy="12" r="2"/></svg>',
+  maintenance:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 1 5.4-5.4L21 6l-3-3z"/></svg>',
+  fuel:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V6a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v15M5 11h9M17 8l2.5 2.5V17a1.5 1.5 0 0 1-3 0"/></svg>',
+  analytics:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M11 20V4M18 20v-7"/></svg>',
+  settings:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
+};
+
+const NAV = [
+  {key:'dashboard', label:'Dashboard'},
+  {key:'fleet', label:'Fleet'},
+  {key:'drivers', label:'Drivers'},
+  {key:'trips', label:'Trips'},
+  {key:'maintenance', label:'Maintenance'},
+  {key:'fuel', label:'Fuel & Expenses'},
+  {key:'analytics', label:'Analytics'},
+  {key:'settings', label:'Settings'},
+];
+
+// permission per role: 'edit' | 'view' | 'none'
+const PERMS = {
+  'Fleet Manager':    {dashboard:'view', fleet:'edit', drivers:'edit', trips:'none', maintenance:'edit', fuel:'none', analytics:'view', settings:'view'},
+  'Dispatcher':        {dashboard:'view', fleet:'view', drivers:'none', trips:'edit', maintenance:'view', fuel:'none', analytics:'none', settings:'view'},
+  'Safety Officer':    {dashboard:'view', fleet:'none', drivers:'edit', trips:'view', maintenance:'none', fuel:'none', analytics:'none', settings:'view'},
+  'Financial Analyst': {dashboard:'view', fleet:'view', drivers:'none', trips:'none', maintenance:'none', fuel:'edit', analytics:'edit', settings:'view'},
+};
+
+let uid = 100;
+const nextId = () => (uid++).toString(36);
+
+let CURRENT_USER = null;
+let ACTIVE_PAGE = 'dashboard';
+let dashFilters = {type:'All', status:'All', region:'All'};
+let tripDraft = {source:'Gandhinagar Depot', dest:'Ahmedabad Hub', vehicleId:'', driverId:'', cargo:'', distance:''};
+
+// ---------- seed data ----------
+let DB = {
+  vehicles: [
+    {id:'v1', reg:'GJ01AB4521', name:'VAN-05',   type:'Van',   capacity:500,  odometer:74000,  acqCost:620000,  status:'Available', region:'Gandhinagar'},
+    {id:'v2', reg:'GJ01AB9981', name:'TRUCK-11',  type:'Truck', capacity:5000, odometer:182000, acqCost:2450000, status:'On Trip',   region:'Ahmedabad'},
+    {id:'v3', reg:'GJ01AB1120', name:'MINI-03',   type:'Mini',  capacity:1000, odometer:66000,  acqCost:410000,  status:'In Shop',   region:'Gandhinagar'},
+    {id:'v4', reg:'GJ01AB0087', name:'VAN-09',    type:'Van',   capacity:750,  odometer:241900, acqCost:590000,  status:'Retired',   region:'Sanand'},
+    {id:'v5', reg:'GJ01AB2214', name:'TRUCK-04',  type:'Truck', capacity:4000, odometer:95000,  acqCost:2100000, status:'Available', region:'Vatva'},
+    {id:'v6', reg:'GJ01AB6650', name:'MINI-08',   type:'Mini',  capacity:900,  odometer:41000,  acqCost:380000,  status:'On Trip',   region:'Ahmedabad'},
+  ],
+  drivers: [
+    {id:'d1', name:'Alex',   license:'DL-88213', category:'LMV', expiry:'2028-12-01', contact:'98765xxxxx', safety:96, trips:34, status:'Available'},
+    {id:'d2', name:'John',   license:'DL-44120', category:'HMV', expiry:'2025-03-01', contact:'98220xxxxx', safety:81, trips:52, status:'Suspended'},
+    {id:'d3', name:'Priya',  license:'DL-77031', category:'LMV', expiry:'2027-08-01', contact:'99110xxxxx', safety:99, trips:61, status:'On Trip'},
+    {id:'d4', name:'Suresh', license:'DL-90045', category:'HMV', expiry:'2027-01-01', contact:'97440xxxxx', safety:88, trips:47, status:'Off Duty'},
+    {id:'d5', name:'Karan',  license:'DL-51290', category:'LMV', expiry:'2027-11-01', contact:'96650xxxxx', safety:93, trips:28, status:'On Trip'},
+  ],
+  trips: [
+    {id:'TR001', source:'Gandhinagar Depot', dest:'Ahmedabad Hub', vehicleId:'v2', driverId:'d3', cargo:3500, distance:120, status:'Dispatched', eta:'45 min', fuelConsumed:null, finalOdometer:null, revenue:null},
+    {id:'TR002', source:'Ahmedabad Hub', dest:'Sanand Warehouse', vehicleId:'v1', driverId:'d1', cargo:450, distance:38, status:'Completed', eta:'—', fuelConsumed:4.5, finalOdometer:74038, revenue:8500},
+    {id:'TR003', source:'Gandhinagar Depot', dest:'Kalol Depot', vehicleId:'v6', driverId:'d5', cargo:600, distance:52, status:'Dispatched', eta:'1h 10m', fuelConsumed:null, finalOdometer:null, revenue:null},
+    {id:'TR004', source:'Vatva Industrial Area', dest:'Sanand Warehouse', vehicleId:'v5', driverId:null, cargo:2000, distance:44, status:'Draft', eta:'Awaiting driver', fuelConsumed:null, finalOdometer:null, revenue:null},
+    {id:'TR006', source:'Mansa', dest:'Kalol Depot', vehicleId:null, driverId:null, cargo:0, distance:0, status:'Cancelled', eta:'Vehicle went to shop', fuelConsumed:null, finalOdometer:null, revenue:null},
+  ],
+  maintenance: [
+    {id:'m1', vehicleId:'v3', type:'Tyre Replace', cost:6200, date:'2026-07-06', status:'Active'},
+    {id:'m2', vehicleId:'v2', type:'Engine Repair', cost:18000, date:'2026-06-20', status:'Completed'},
+  ],
+  fuelLogs: [
+    {id:'f1', vehicleId:'v1', date:'2026-07-05', liters:42, cost:3150},
+    {id:'f2', vehicleId:'v2', date:'2026-07-06', liters:110, cost:8400},
+    {id:'f3', vehicleId:'v6', date:'2026-07-06', liters:28, cost:2050},
+  ],
+  expenses: [
+    {id:'e1', tripId:'TR001', vehicleId:'v2', toll:120, other:0},
+    {id:'e2', tripId:'TR002', vehicleId:'v1', toll:340, other:150},
+  ],
+  settings: {depot:'Gandhinagar Depot GJ4', currency:'INR (₹)', distanceUnit:'Kilometers', ratePerKm:150},
+};
+
+// ---------- helpers ----------
+const $ = sel => document.querySelector(sel);
+const byId = (arr,id) => arr.find(x=>x.id===id);
+const fmt = n => Number(n||0).toLocaleString('en-IN');
+const todayISO = () => new Date().toISOString().slice(0,10);
+
+function showToast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+function isLicenseExpired(driver){
+  return new Date(driver.expiry) < new Date('2026-07-12');
+}
+
+function vehicleOperationalCost(vehicleId){
+  const fuel = DB.fuelLogs.filter(f=>f.vehicleId===vehicleId).reduce((s,f)=>s+f.cost,0);
+  const maint = DB.maintenance.filter(m=>m.vehicleId===vehicleId).reduce((s,m)=>s+m.cost,0);
+  return {fuel, maint, total: fuel+maint};
+}
+
+function vehicleRevenue(vehicleId){
+  return DB.trips.filter(t=>t.vehicleId===vehicleId && t.status==='Completed').reduce((s,t)=>s+(t.revenue||0),0);
+}
+
+function fleetUtilization(){
+  const nonRetired = DB.vehicles.filter(v=>v.status!=='Retired');
+  if(!nonRetired.length) return 0;
+  const onTrip = nonRetired.filter(v=>v.status==='On Trip').length;
+  return Math.round((onTrip/nonRetired.length)*100);
+}
+
+function fuelEfficiency(){
+  const totalDistance = DB.trips.filter(t=>t.status==='Completed').reduce((s,t)=>s+(t.distance||0),0);
+  const totalLiters = DB.fuelLogs.reduce((s,f)=>s+f.liters,0);
+  return totalLiters ? (totalDistance/totalLiters) : 0;
+}
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+function handleLogin(){
+  const email = $('#loginEmail').value.trim();
+  const pass = $('#loginPass').value.trim();
+  const role = $('#loginRole').value;
+  if(!email || !pass){
+    $('#loginErr').style.display='block';
+    $('#loginErr').textContent = 'Enter an email and password to continue.';
+    return;
+  }
+  const namePart = email.split('@')[0].split('.').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  CURRENT_USER = {name: namePart || 'Raven K.', role};
+  ACTIVE_PAGE = 'dashboard';
+  $('#loginScreen').style.display='none';
+  $('#app').style.display='block';
+  renderShell();
+}
+
+function handleLogout(){
+  CURRENT_USER = null;
+  $('#app').style.display='none';
+  $('#loginScreen').style.display='flex';
+}
+
+/* ============================================================
+   SHELL / NAV
+   ============================================================ */
+function renderShell(){
+  const perms = PERMS[CURRENT_USER.role];
+  const initials = CURRENT_USER.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+  $('#sidebarNav').innerHTML = `
+    <div class="brand"><div class="dot"></div><span>TransitOps</span></div>
+    <div>
+      ${NAV.map(n=>{
+        const perm = perms[n.key];
+        const locked = perm==='none';
+        return `<button class="nav-item ${ACTIVE_PAGE===n.key?'active':''} ${locked?'locked':''}"
+          ${locked?'disabled title="Not available for your role"':`onclick="goPage('${n.key}')"`}>
+          ${ICONS[n.key]}<span>${n.label}</span>
+        </button>`;
+      }).join('')}
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar">${initials}</div>
+        <div><div class="name">${CURRENT_USER.name}</div><div class="role">${CURRENT_USER.role}</div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()">Sign out</button>
+    </div>`;
+
+  $('#topUserChip').innerHTML = `<span class="badge b-gray">${CURRENT_USER.role}</span>`;
+  renderPage();
+}
+
+function goPage(key){
+  ACTIVE_PAGE = key;
+  renderShell();
+}
+
+function permFor(page){ return PERMS[CURRENT_USER.role][page]; }
+
+function renderPage(){
+  const root = $('#pageRoot');
+  const perm = permFor(ACTIVE_PAGE);
+  if(perm==='none'){
+    root.innerHTML = `<div class="empty">Your role (${CURRENT_USER.role}) doesn't have access to this page.</div>`;
+    return;
+  }
+  const renderers = {
+    dashboard: renderDashboard, fleet: renderFleet, drivers: renderDrivers,
+    trips: renderTrips, maintenance: renderMaintenance, fuel: renderFuel,
+    analytics: renderAnalytics, settings: renderSettings
+  };
+  renderers[ACTIVE_PAGE](root, perm);
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard(root){
+  let vehicles = DB.vehicles.slice();
+  if(dashFilters.type!=='All') vehicles = vehicles.filter(v=>v.type===dashFilters.type);
+  if(dashFilters.status!=='All') vehicles = vehicles.filter(v=>v.status===dashFilters.status);
+  if(dashFilters.region!=='All') vehicles = vehicles.filter(v=>v.region===dashFilters.region);
+
+  const active = vehicles.filter(v=>v.status!=='Retired').length;
+  const available = vehicles.filter(v=>v.status==='Available').length;
+  const inMaint = vehicles.filter(v=>v.status==='In Shop').length;
+  const activeTrips = DB.trips.filter(t=>t.status==='Dispatched').length;
+  const pendingTrips = DB.trips.filter(t=>t.status==='Draft').length;
+  const driversOnDuty = DB.drivers.filter(d=>d.status==='On Trip'||d.status==='Available').length;
+  const util = fleetUtilization();
+
+  const types = [...new Set(DB.vehicles.map(v=>v.type))];
+  const regions = [...new Set(DB.vehicles.map(v=>v.region))];
+  const statuses = ['Available','On Trip','In Shop','Retired'];
+
+  root.innerHTML = `
+    <div class="page-head">
+      <div><h1>Dashboard</h1><div class="desc">Live snapshot of fleet health and dispatch activity.</div></div>
+    </div>
+    <div class="filters">
+      <select onchange="dashFilters.type=this.value;renderPage()">
+        <option ${dashFilters.type==='All'?'selected':''}>All</option>
+        ${types.map(t=>`<option ${dashFilters.type===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <select onchange="dashFilters.status=this.value;renderPage()">
+        <option ${dashFilters.status==='All'?'selected':''}>All</option>
+        ${statuses.map(s=>`<option ${dashFilters.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <select onchange="dashFilters.region=this.value;renderPage()">
+        <option ${dashFilters.region==='All'?'selected':''}>All</option>
+        ${regions.map(r=>`<option ${dashFilters.region===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="lbl">Active Vehicles</div><div class="val">${active}</div></div>
+      <div class="kpi-card"><div class="lbl">Available Vehicles</div><div class="val green">${available}</div></div>
+      <div class="kpi-card"><div class="lbl">In Maintenance</div><div class="val amber">${inMaint}</div></div>
+      <div class="kpi-card"><div class="lbl">Active Trips</div><div class="val blue">${activeTrips}</div></div>
+      <div class="kpi-card"><div class="lbl">Pending Trips</div><div class="val">${pendingTrips}</div></div>
+      <div class="kpi-card"><div class="lbl">Drivers On Duty</div><div class="val">${driversOnDuty}</div></div>
+      <div class="kpi-card"><div class="lbl">Fleet Utilization</div><div class="val amber">${util}%</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Recent Trips</h3><span class="badge b-gray">${DB.trips.length} total</span></div>
+        <div class="panel-body">
+          ${DB.trips.map(t=>tripTagHTML(t)).join('')}
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Vehicle Status</h3></div>
+        <div class="panel-body"><canvas id="statusChart" height="210"></canvas></div>
+      </div>
+    </div>`;
+
+  const counts = {Available:0,'On Trip':0,'In Shop':0,Retired:0};
+  DB.vehicles.forEach(v=>counts[v.status]++);
+  drawDoughnut('statusChart', Object.keys(counts), Object.values(counts), ['#2E7D4F','#3B6C90','#F5A623','#C4433D']);
+}
+
+function tripTagHTML(t){
+  const stripeClass = t.status.toLowerCase();
+  const veh = t.vehicleId ? byId(DB.vehicles,t.vehicleId).name : '—';
+  const drv = t.driverId ? byId(DB.drivers,t.driverId).name : '—';
+  return `<div class="tag">
+    <div class="stripe ${stripeClass}"></div>
+    <div class="tag-body">
+      <div class="tag-left">
+        <div class="id">${t.id} <span style="color:var(--faint);font-weight:400;">· ${veh} / ${drv}</span></div>
+        <div class="route">${t.source}<span class="arrow">→</span>${t.dest}</div>
+      </div>
+      <div class="tag-right">
+        <div>${tripBadge(t.status)}</div>
+        <div style="margin-top:5px;">${t.eta}</div>
+      </div>
+    </div>
+  </div>`;
+}
+function tripBadge(status){
+  const map = {Dispatched:'b-blue', Draft:'b-gray', Completed:'b-green', Cancelled:'b-red'};
+  return `<span class="badge ${map[status]}">${status}</span>`;
+}
+function vehicleBadge(status){
+  const map = {Available:'b-green','On Trip':'b-blue','In Shop':'b-amber',Retired:'b-red'};
+  return `<span class="badge ${map[status]}">${status}</span>`;
+}
+function driverBadge(status){
+  const map = {Available:'b-green','On Trip':'b-blue','Off Duty':'b-gray',Suspended:'b-red'};
+  return `<span class="badge ${map[status]}">${status}</span>`;
+}
+
+let charts = {};
+function drawDoughnut(canvasId, labels, data, colors){
+  const ctx = document.getElementById(canvasId);
+  if(!ctx) return;
+  if(charts[canvasId]) charts[canvasId].destroy();
+  charts[canvasId] = new Chart(ctx, {
+    type:'doughnut',
+    data:{labels, datasets:[{data, backgroundColor:colors, borderWidth:0}]},
+    options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{family:'Inter', size:11}}}}, cutout:'62%'}
+  });
+}
+function drawBar(canvasId, labels, data, color){
+  const ctx = document.getElementById(canvasId);
+  if(!ctx) return;
+  if(charts[canvasId]) charts[canvasId].destroy();
+  charts[canvasId] = new Chart(ctx, {
+    type:'bar',
+    data:{labels, datasets:[{data, backgroundColor:color, borderRadius:5, maxBarThickness:38}]},
+    options:{plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:{color:'#EEF0EF'}}, x:{grid:{display:false}}}}
+  });
+}
+
+/* ============================================================
+   FLEET / VEHICLE REGISTRY
+   ============================================================ */
+let fleetSearch = '';
+let fleetTypeF = 'All', fleetStatusF = 'All';
+
+function renderFleet(root, perm){
+  let list = DB.vehicles.slice();
+  if(fleetTypeF!=='All') list = list.filter(v=>v.type===fleetTypeF);
+  if(fleetStatusF!=='All') list = list.filter(v=>v.status===fleetStatusF);
+  if(fleetSearch) list = list.filter(v=>v.reg.toLowerCase().includes(fleetSearch.toLowerCase()) || v.name.toLowerCase().includes(fleetSearch.toLowerCase()));
+
+  const types = [...new Set(DB.vehicles.map(v=>v.type))];
+
+  root.innerHTML = `
+    <div class="page-head">
+      <div><h1>Vehicle Registry</h1><div class="desc">Master list of fleet assets and their lifecycle status.</div></div>
+      ${perm==='edit' ? `<button class="btn btn-amber" onclick="openVehicleModal()">+ Add Vehicle</button>` : ''}
+    </div>
+    <div class="filters">
+      <select onchange="fleetTypeF=this.value;renderPage()">
+        <option ${fleetTypeF==='All'?'selected':''}>All</option>
+        ${types.map(t=>`<option ${fleetTypeF===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <select onchange="fleetStatusF=this.value;renderPage()">
+        <option ${fleetStatusF==='All'?'selected':''}>All</option>
+        ${['Available','On Trip','In Shop','Retired'].map(s=>`<option ${fleetStatusF===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input class="fill" placeholder="Search reg. no. or name…" value="${fleetSearch}" oninput="fleetSearch=this.value;renderPage()" style="max-width:260px;">
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Reg. No.</th><th>Name/Model</th><th>Type</th><th>Capacity</th><th>Odometer</th><th>Acq. Cost</th><th>Status</th>${perm==='edit'?'<th></th>':''}</tr></thead>
+        <tbody>
+        ${list.length? list.map(v=>`
+          <tr>
+            <td class="reg">${v.reg}</td>
+            <td>${v.name}</td>
+            <td>${v.type}</td>
+            <td>${fmt(v.capacity)} kg</td>
+            <td class="mono">${fmt(v.odometer)}</td>
+            <td class="mono">₹${fmt(v.acqCost)}</td>
+            <td>${vehicleBadge(v.status)}</td>
+            ${perm==='edit'?`<td><div class="row-actions">
+              <button class="icon-btn" title="Retire" onclick="setVehicleStatus('${v.id}','Retired')">⛔</button>
+              <button class="icon-btn" title="Mark Available" onclick="setVehicleStatus('${v.id}','Available')">✓</button>
+            </div></td>`:''}
+          </tr>`).join('') : `<tr><td colspan="8"><div class="empty">No vehicles match these filters.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="hint" style="margin-top:12px;">Rule: registration number must be unique · retired or in-shop vehicles are hidden from the trip dispatcher.</div>`;
+}
+
+function setVehicleStatus(id, status){
+  const v = byId(DB.vehicles, id);
+  if(status==='Available' && v.status==='Retired'){ showToast('A retired vehicle cannot be reactivated here.'); return; }
+  v.status = status;
+  renderPage();
+  showToast(`${v.name} marked ${status}.`);
+}
+
+function openVehicleModal(){
+  const body = `
+    <h3>Add Vehicle</h3>
+    <div class="sub">Registration number must be unique across the fleet.</div>
+    <div class="form-grid">
+      <div class="full"><label>Registration Number</label><input id="mv_reg" placeholder="GJ01AB0000"></div>
+      <div><label>Name / Model</label><input id="mv_name" placeholder="VAN-12"></div>
+      <div><label>Type</label>
+        <select id="mv_type"><option>Van</option><option>Truck</option><option>Mini</option></select>
+      </div>
+      <div><label>Max Load Capacity (kg)</label><input id="mv_cap" type="number" placeholder="500"></div>
+      <div><label>Odometer</label><input id="mv_odo" type="number" placeholder="0"></div>
+      <div><label>Acquisition Cost (₹)</label><input id="mv_cost" type="number" placeholder="500000"></div>
+      <div><label>Region</label><input id="mv_region" placeholder="Gandhinagar"></div>
+    </div>
+    <div id="mv_err" class="validation-block validation-bad" style="display:none;"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-amber" onclick="submitVehicle()">Save Vehicle</button>
+    </div>`;
+  openModal(body);
+}
+
+function submitVehicle(){
+  const reg = $('#mv_reg').value.trim().toUpperCase();
+  const name = $('#mv_name').value.trim();
+  const type = $('#mv_type').value;
+  const cap = Number($('#mv_cap').value);
+  const odo = Number($('#mv_odo').value)||0;
+  const cost = Number($('#mv_cost').value)||0;
+  const region = $('#mv_region').value.trim() || 'Unassigned';
+  const err = $('#mv_err');
+
+  if(!reg || !name || !cap){ err.style.display='block'; err.textContent='Registration number, name, and capacity are required.'; return; }
+  if(DB.vehicles.some(v=>v.reg===reg)){ err.style.display='block'; err.textContent=`Registration number ${reg} is already in use — it must be unique.`; return; }
+
+  DB.vehicles.push({id:nextId(), reg, name, type, capacity:cap, odometer:odo, acqCost:cost, status:'Available', region});
+  closeModal();
+  renderPage();
+  showToast(`${name} added to the registry.`);
+}
+
+/* ============================================================
+   DRIVERS
+   ============================================================ */
+function renderDrivers(root, perm){
+  root.innerHTML = `
+    <div class="page-head">
+      <div><h1>Drivers & Safety Profiles</h1><div class="desc">License validity, safety scores, and duty status.</div></div>
+      ${perm==='edit' ? `<button class="btn btn-amber" onclick="openDriverModal()">+ Add Driver</button>` : ''}
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Driver</th><th>License No.</th><th>Category</th><th>Expiry</th><th>Contact</th><th>Trips</th><th>Safety</th><th>Status</th>${perm==='edit'?'<th>Toggle</th>':''}</tr></thead>
+        <tbody>
+        ${DB.drivers.map(d=>{
+          const expired = isLicenseExpired(d);
+          return `<tr>
+            <td>${d.name}</td>
+            <td class="mono">${d.license}</td>
+            <td>${d.category}</td>
+            <td>${expired?`<span style="color:var(--red);font-weight:600;">${d.expiry} EXPIRED</span>`:d.expiry}</td>
+            <td class="mono">${d.contact}</td>
+            <td>${d.trips}</td>
+            <td>${d.safety}%</td>
+            <td>${driverBadge(d.status)}</td>
+            ${perm==='edit'?`<td>
+              <select onchange="setDriverStatus('${d.id}', this.value)" style="border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-size:12.5px;">
+                ${['Available','On Trip','Off Duty','Suspended'].map(s=>`<option ${d.status===s?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </td>`:''}
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="hint" style="margin-top:12px;">Rule: expired license or Suspended status blocks trip assignment.</div>`;
+}
+
+function setDriverStatus(id, status){
+  const d = byId(DB.drivers, id);
+  d.status = status;
+  renderPage();
+  showToast(`${d.name} marked ${status}.`);
+}
+
+function openDriverModal(){
+  const body = `
+    <h3>Add Driver</h3>
+    <div class="sub">New drivers start as Available once license details are confirmed.</div>
+    <div class="form-grid">
+      <div><label>Name</label><input id="md_name" placeholder="Full name"></div>
+      <div><label>License Number</label><input id="md_lic" placeholder="DL-00000"></div>
+      <div><label>License Category</label><select id="md_cat"><option>LMV</option><option>HMV</option></select></div>
+      <div><label>License Expiry</label><input id="md_exp" type="date" value="2028-01-01"></div>
+      <div><label>Contact Number</label><input id="md_contact" placeholder="98xxxxxxx"></div>
+      <div><label>Safety Score</label><input id="md_safety" type="number" value="90" min="0" max="100"></div>
+    </div>
+    <div id="md_err" class="validation-block validation-bad" style="display:none;"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-amber" onclick="submitDriver()">Save Driver</button>
+    </div>`;
+  openModal(body);
+}
+function submitDriver(){
+  const name = $('#md_name').value.trim();
+  const lic = $('#md_lic').value.trim();
+  const cat = $('#md_cat').value;
+  const exp = $('#md_exp').value;
+  const contact = $('#md_contact').value.trim();
+  const safety = Number($('#md_safety').value)||90;
+  const err = $('#md_err');
+  if(!name || !lic){ err.style.display='block'; err.textContent='Name and license number are required.'; return; }
+  DB.drivers.push({id:nextId(), name, license:lic, category:cat, expiry:exp, contact:contact||'—', safety, trips:0, status:'Available'});
+  closeModal();
+  renderPage();
+  showToast(`${name} added to the driver roster.`);
+}
+
+/* ============================================================
+   TRIPS
+   ============================================================ */
+function renderTrips(root, perm){
+  const availableVehicles = DB.vehicles.filter(v=>v.status==='Available');
+  const availableDrivers = DB.drivers.filter(d=>d.status==='Available' && !isLicenseExpired(d));
+
+  const cargo = Number(tripDraft.cargo)||0;
+  const selVeh = tripDraft.vehicleId ? byId(DB.vehicles, tripDraft.vehicleId) : null;
+  const capExceeded = selVeh && cargo > selVeh.capacity;
+  const canDispatch = perm==='edit' && selVeh && tripDraft.driverId && cargo>0 && !capExceeded && Number(tripDraft.distance)>0;
+
+  root.innerHTML = `
+    <div class="page-head">
+      <div><h1>Trip Dispatcher</h1><div class="desc">Draft → Dispatched → Completed → Cancelled</div></div>
+      <div class="chip-toggle">
+        ${['Draft','Dispatched','Completed','Cancelled'].map(s=>`<button class="${s==='Draft'?'active':''}">${s}</button>`).join('')}
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Live Board</h3><span class="badge b-gray">${DB.trips.length} trips</span></div>
+        <div class="panel-body">
+          ${DB.trips.map(t=>tripTagHTML(t) + tripRowActions(t, perm)).join('')}
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Create Trip</h3></div>
+        <div class="panel-body">
+          ${perm!=='edit' ? `<div class="empty">View-only access — trip creation is limited to Dispatchers.</div>` : `
+          <div class="form-grid">
+            <div><label>Source</label><input value="${tripDraft.source}" oninput="tripDraft.source=this.value"></div>
+            <div><label>Destination</label><input value="${tripDraft.dest}" oninput="tripDraft.dest=this.value"></div>
+            <div class="full"><label>Vehicle (available only)</label>
+              <select onchange="tripDraft.vehicleId=this.value;renderPage()">
+                <option value="">Select vehicle…</option>
+                ${availableVehicles.map(v=>`<option value="${v.id}" ${tripDraft.vehicleId===v.id?'selected':''}>${v.name} — ${fmt(v.capacity)} kg capacity</option>`).join('')}
+              </select>
+            </div>
+            <div class="full"><label>Driver (available only)</label>
+              <select onchange="tripDraft.driverId=this.value;renderPage()">
+                <option value="">Select driver…</option>
+                ${availableDrivers.map(d=>`<option value="${d.id}" ${tripDraft.driverId===d.id?'selected':''}>${d.name}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>Cargo Weight (kg)</label><input type="number" value="${tripDraft.cargo}" oninput="tripDraft.cargo=this.value;renderPage()"></div>
+            <div><label>Planned Distance (km)</label><input type="number" value="${tripDraft.distance}" oninput="tripDraft.distance=this.value"></div>
+          </div>
+          ${selVeh?`
+            <div class="validation-block ${capExceeded?'validation-bad':'validation-ok'}">
+              Vehicle capacity: ${fmt(selVeh.capacity)} kg · Cargo weight: ${fmt(cargo)} kg<br>
+              ${capExceeded? `❌ Capacity exceeded by ${fmt(cargo-selVeh.capacity)} kg — dispatch blocked` : '✓ Within capacity — ready to dispatch'}
+            </div>`:''}
+          <div class="modal-foot" style="margin-top:16px;justify-content:flex-start;">
+            <button class="btn btn-amber" ${canDispatch?'':'disabled style="opacity:.4;cursor:not-allowed;"'} onclick="dispatchTrip()">Dispatch</button>
+            <button class="btn btn-ghost" onclick="resetTripDraft()">Reset</button>
+          </div>
+          `}
+        </div>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:14px;">On Complete: odometer → fuel log → expenses → vehicle & driver set back to Available.</div>`;
+}
+
+function tripRowActions(t, perm){
+  if(perm!=='edit') return '';
+  let btns = '';
+  if(t.status==='Dispatched'){
+    btns = `<button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="openCompleteTrip('${t.id}')">Complete</button>
+            <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;" onclick="cancelTrip('${t.id}')">Cancel</button>`;
+  }
+  return btns ? `<div style="display:flex;gap:8px;margin:-4px 0 12px 15px;">${btns}</div>` : '';
+}
+
+function resetTripDraft(){
+  tripDraft = {source:'Gandhinagar Depot', dest:'Ahmedabad Hub', vehicleId:'', driverId:'', cargo:'', distance:''};
+  renderPage();
+}
+
+function dispatchTrip(){
+  const v = byId(DB.vehicles, tripDraft.vehicleId);
+  const d = byId(DB.drivers, tripDraft.driverId);
+  const cargo = Number(tripDraft.cargo);
+  if(!v || !d) return;
+  if(v.status!=='Available'){ showToast('Vehicle is no longer available.'); return; }
+  if(d.status!=='Available' || isLicenseExpired(d)){ showToast('Driver is no longer eligible.'); return; }
+  if(cargo > v.capacity){ showToast('Cargo weight exceeds vehicle capacity — dispatch blocked.'); return; }
+
+  const id = 'TR' + String(DB.trips.length+1).padStart(3,'0');
+  DB.trips.unshift({id, source:tripDraft.source, dest:tripDraft.dest, vehicleId:v.id, driverId:d.id,
+    cargo, distance:Number(tripDraft.distance), status:'Dispatched', eta:'In transit', fuelConsumed:null, finalOdometer:null, revenue:null});
+  v.status='On Trip'; d.status='On Trip';
+  resetTripDraft();
+  showToast(`${id} dispatched — ${v.name} & ${d.name} now On Trip.`);
+}
+
+function cancelTrip(id){
+  const t = byId(DB.trips, id);
+  t.status='Cancelled'; t.eta='Cancelled by dispatcher';
+  if(t.vehicleId) byId(DB.vehicles, t.vehicleId).status='Available';
+  if(t.driverId) byId(DB.drivers, t.driverId).status='Available';
+  renderPage();
+  showToast(`${id} cancelled — vehicle & driver restored to Available.`);
+}
+
+function openCompleteTrip(id){
+  const t = byId(DB.trips, id);
+  const v = byId(DB.vehicles, t.vehicleId);
+  const body = `
+    <h3>Complete ${t.id}</h3>
+    <div class="sub">${v.name} · ${t.source} → ${t.dest}</div>
+    <div class="form-grid">
+      <div><label>Final Odometer</label><input id="ct_odo" type="number" value="${v.odometer + t.distance}"></div>
+      <div><label>Fuel Consumed (L)</label><input id="ct_fuel" type="number" value="${Math.round(t.distance/9*10)/10}"></div>
+      <div class="full"><label>Trip Revenue (₹)</label><input id="ct_rev" type="number" value="${t.distance * DB.settings.ratePerKm}"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-amber" onclick="completeTrip('${id}')">Mark Completed</button>
+    </div>`;
+  openModal(body);
+}
+function completeTrip(id){
+  const t = byId(DB.trips, id);
+  const v = byId(DB.vehicles, t.vehicleId);
+  const d = byId(DB.drivers, t.driverId);
+  const odo = Number($('#ct_odo').value);
+  const fuel = Number($('#ct_fuel').value);
+  const rev = Number($('#ct_rev').value);
+  const fuelCostPerL = 75;
+
+  t.status='Completed'; t.eta='—'; t.fuelConsumed=fuel; t.finalOdometer=odo; t.revenue=rev;
+  v.odometer = odo; v.status='Available';
+  d.status='Available'; d.trips += 1;
+
+  DB.fuelLogs.push({id:nextId(), vehicleId:v.id, date:todayISO(), liters:fuel, cost:Math.round(fuel*fuelCostPerL)});
+  closeModal();
+  renderPage();
+  showToast(`${t.id} completed — ${v.name} & ${d.name} back to Available.`);
+}
+
+/* ============================================================
+   MAINTENANCE
+   ============================================================ */
+function renderMaintenance(root, perm){
+  root.innerHTML = `
+    <div class="page-head">
+      <div><h1>Maintenance</h1><div class="desc">Service records and vehicle shop status.</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Service Log</h3></div>
+        <table>
+          <thead><tr><th>Vehicle</th><th>Service</th><th>Cost</th><th>Date</th><th>Status</th>${perm==='edit'?'<th></th>':''}</tr></thead>
+          <tbody>
+          ${DB.maintenance.map(m=>{
+            const v = byId(DB.vehicles, m.vehicleId);
+            return `<tr>
+              <td>${v?v.name:'—'}</td>
+              <td>${m.type}</td>
+              <td class="mono">₹${fmt(m.cost)}</td>
+              <td>${m.date}</td>
+              <td><span class="badge ${m.status==='Active'?'b-amber':'b-green'}">${m.status}</span></td>
+              ${perm==='edit' && m.status==='Active'?`<td><button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;" onclick="closeMaintenance('${m.id}')">Close record</button></td>`:perm==='edit'?'<td></td>':''}
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Log Service Record</h3></div>
+        <div class="panel-body">
+          ${perm!=='edit'?`<div class="empty">View-only access — only Fleet Managers can log service records.</div>`:`
+          <div class="form-grid">
+            <div class="full"><label>Vehicle</label>
+              <select id="mm_veh">
+                ${DB.vehicles.filter(v=>v.status!=='Retired').map(v=>`<option value="${v.id}">${v.name} (${v.status})</option>`).join('')}
+              </select>
+            </div>
+            <div><label>Service Type</label><input id="mm_type" placeholder="Oil Change"></div>
+            <div><label>Cost (₹)</label><input id="mm_cost" type="number" placeholder="2500"></div>
+            <div class="full"><label>Date</label><input id="mm_date" type="date" value="${todayISO()}"></div>
+          </div>
+          <div class="hint">Creating an active record automatically switches the vehicle to <strong>In Shop</strong>, removing it from the dispatch pool.</div>
+          <div class="modal-foot" style="justify-content:flex-start;margin-top:14px;">
+            <button class="btn btn-amber" onclick="logMaintenance()">Save Record</button>
+          </div>`}
+        </div>
+      </div>
+    </div>`;
+}
+function logMaintenance(){
+  const vehicleId = $('#mm_veh').value;
+  const type = $('#mm_type').value.trim() || 'Service';
+  const cost = Number($('#mm_cost').value)||0;
+  const date = $('#mm_date').value;
+  DB.maintenance.unshift({id:nextId(), vehicleId, type, cost, date, status:'Active'});
+  const v = byId(DB.vehicles, vehicleId);
+  v.status = 'In Shop';
+  renderPage();
+  showToast(`${v.name} moved to In Shop for ${type}.`);
+}
+function closeMaintenance(id){
+  const m = byId(DB.maintenance, id);
+  m.status = 'Completed';
+  const v = byId(DB.vehicles, m.vehicleId);
+  if(v.status!=='Retired') v.status='Available';
+  renderPage();
+  showToast(`${v.name} restored to Available.`);
+}
+
+/* ============================================================
+   FUEL & EXPENSES
+   ============================================================ */
+function renderFuel(root, perm){
+  const totalFuel = DB.fuelLogs.reduce((s,f)=>s+f.cost,0);
+  const totalMaint = DB.maintenance.reduce((s,m)=>s+m.cost,0);
+  root.innerHTML = `
+    <div class="page-head">
+      <div><h1>Fuel & Expense Management</h1><div class="desc">Fuel logs, tolls, and operational cost roll-up.</div></div>
+      ${perm==='edit'?`<div style="display:flex;gap:10px;"><button class="btn btn-ghost" onclick="openFuelModal()">+ Log Fuel</button><button class="btn btn-amber" onclick="openExpenseModal()">+ Add Expense</button></div>`:''}
+    </div>
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-head"><h3>Fuel Logs</h3></div>
+      <table>
+        <thead><tr><th>Vehicle</th><th>Date</th><th>Liters</th><th>Fuel Cost</th></tr></thead>
+        <tbody>${DB.fuelLogs.map(f=>{
+          const v = byId(DB.vehicles, f.vehicleId);
+          return `<tr><td>${v?v.name:'—'}</td><td>${f.date}</td><td class="mono">${f.liters} L</td><td class="mono">₹${fmt(f.cost)}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-head"><h3>Other Expenses (Toll / Misc)</h3></div>
+      <table>
+        <thead><tr><th>Trip</th><th>Vehicle</th><th>Toll</th><th>Other</th><th>Maint. (linked)</th><th>Vehicle Status</th></tr></thead>
+        <tbody>${DB.expenses.map(e=>{
+          const v = byId(DB.vehicles, e.vehicleId);
+          const maintLinked = DB.maintenance.filter(m=>m.vehicleId===e.vehicleId).reduce((s,m)=>s+m.cost,0);
+          return `<tr><td>${e.tripId}</td><td>${v?v.name:'—'}</td><td class="mono">₹${fmt(e.toll)}</td><td class="mono">₹${fmt(e.other)}</td><td class="mono">₹${fmt(maintLinked)}</td><td>${vehicleBadge(v.status)}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-body" style="display:flex;justify-content:space-between;align-items:center;">
+        <div><div class="lbl" style="font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;">Total Operational Cost (auto) = Fuel + Maintenance</div></div>
+        <div class="mono" style="font-size:22px;font-weight:700;">₹${fmt(totalFuel+totalMaint)}</div>
+      </div>
+    </div>`;
+}
+function openFuelModal(){
+  const body = `<h3>Log Fuel</h3>
+    <div class="form-grid">
+      <div class="full"><label>Vehicle</label><select id="mf_veh">${DB.vehicles.map(v=>`<option value="${v.id}">${v.name}</option>`).join('')}</select></div>
+      <div><label>Liters</label><input id="mf_l" type="number" placeholder="40"></div>
+      <div><label>Cost (₹)</label><input id="mf_cost" type="number" placeholder="3000"></div>
+      <div class="full"><label>Date</label><input id="mf_date" type="date" value="${todayISO()}"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-amber" onclick="submitFuel()">Save</button></div>`;
+  openModal(body);
+}
+function submitFuel(){
+  DB.fuelLogs.unshift({id:nextId(), vehicleId:$('#mf_veh').value, date:$('#mf_date').value, liters:Number($('#mf_l').value)||0, cost:Number($('#mf_cost').value)||0});
+  closeModal(); renderPage(); showToast('Fuel log recorded.');
+}
+function openExpenseModal(){
+  const body = `<h3>Add Expense</h3>
+    <div class="form-grid">
+      <div><label>Trip</label><select id="me_trip">${DB.trips.map(t=>`<option value="${t.id}">${t.id}</option>`).join('')}</select></div>
+      <div><label>Vehicle</label><select id="me_veh">${DB.vehicles.map(v=>`<option value="${v.id}">${v.name}</option>`).join('')}</select></div>
+      <div><label>Toll (₹)</label><input id="me_toll" type="number" placeholder="0"></div>
+      <div><label>Other (₹)</label><input id="me_other" type="number" placeholder="0"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-amber" onclick="submitExpense()">Save</button></div>`;
+  openModal(body);
+}
+function submitExpense(){
+  DB.expenses.unshift({id:nextId(), tripId:$('#me_trip').value, vehicleId:$('#me_veh').value, toll:Number($('#me_toll').value)||0, other:Number($('#me_other').value)||0});
+  closeModal(); renderPage(); showToast('Expense recorded.');
+}
+
+/* ============================================================
+   ANALYTICS
+   ============================================================ */
+function renderAnalytics(root, perm){
+  const eff = fuelEfficiency().toFixed(1);
+  const util = fleetUtilization();
+  const totalFuel = DB.fuelLogs.reduce((s,f)=>s+f.cost,0);
+  const totalMaint = DB.maintenance.reduce((s,m)=>s+m.cost,0);
+  const opCost = totalFuel+totalMaint;
+
+  const vRows = DB.vehicles.filter(v=>v.status!=='Retired').map(v=>{
+    const {total} = vehicleOperationalCost(v.id);
+    const rev = vehicleRevenue(v.id);
+    const roi = v.acqCost ? ((rev-total)/v.acqCost*100) : 0;
+    return {v, total, rev, roi};
+  });
+  const avgRoi = vRows.length ? (vRows.reduce((s,r)=>s+r.roi,0)/vRows.length).toFixed(1) : '0.0';
+  const costliest = vRows.slice().sort((a,b)=>b.total-a.total).slice(0,5);
+
+  root.innerHTML = `
+    <div class="page-head">
+      <div><h1>Reports & Analytics</h1><div class="desc">Efficiency, utilization, cost and ROI across the fleet.</div></div>
+      ${perm==='edit'?`<button class="btn btn-ghost" onclick="exportCSV()">Export CSV</button>`:''}
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="kpi-card"><div class="lbl">Fuel Efficiency</div><div class="val blue">${eff} km/l</div></div>
+      <div class="kpi-card"><div class="lbl">Fleet Utilization</div><div class="val amber">${util}%</div></div>
+      <div class="kpi-card"><div class="lbl">Operational Cost</div><div class="val">₹${fmt(opCost)}</div></div>
+      <div class="kpi-card"><div class="lbl">Avg. Vehicle ROI</div><div class="val green">${avgRoi}%</div></div>
+    </div>
+    <div class="hint" style="margin:-10px 0 18px;">ROI = (Revenue − (Maintenance + Fuel)) / Acquisition Cost</div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Top Costliest Vehicles</h3></div>
+        <div class="panel-body"><canvas id="costChart" height="220"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Vehicle ROI</h3></div>
+        <table>
+          <thead><tr><th>Vehicle</th><th>Revenue</th><th>Cost</th><th>ROI</th></tr></thead>
+          <tbody>${vRows.map(r=>`<tr><td>${r.v.name}</td><td class="mono">₹${fmt(r.rev)}</td><td class="mono">₹${fmt(r.total)}</td><td class="mono" style="color:${r.roi>=0?'var(--green)':'var(--red)'}">${r.roi.toFixed(1)}%</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  drawBar('costChart', costliest.map(r=>r.v.name), costliest.map(r=>r.total), '#F5A623');
+}
+function exportCSV(){
+  const rows = [['Vehicle','Type','Status','Fuel Cost','Maintenance Cost','Total Cost','Revenue','ROI %']];
+  DB.vehicles.forEach(v=>{
+    const {fuel, maint, total} = vehicleOperationalCost(v.id);
+    const rev = vehicleRevenue(v.id);
+    const roi = v.acqCost ? ((rev-total)/v.acqCost*100).toFixed(1) : '0.0';
+    rows.push([v.name, v.type, v.status, fuel, maint, total, rev, roi]);
+  });
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'transitops_report.csv';
+  link.click();
+  showToast('CSV export downloaded.');
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettings(root, perm){
+  const roles = Object.keys(PERMS);
+  const cols = ['fleet','drivers','trips','fuel','analytics'];
+  root.innerHTML = `
+    <div class="page-head"><div><h1>Settings & RBAC</h1><div class="desc">Depot preferences and the role-based access matrix.</div></div></div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>General</h3></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="full"><label>Depot Name</label><input id="st_depot" value="${DB.settings.depot}" ${perm==='edit'?'':'disabled'}></div>
+            <div><label>Currency</label><input value="${DB.settings.currency}" disabled></div>
+            <div><label>Distance Unit</label><input value="${DB.settings.distanceUnit}" disabled></div>
+          </div>
+          ${perm==='edit'?`<div class="modal-foot" style="justify-content:flex-start;margin-top:14px;"><button class="btn btn-amber" onclick="saveSettings()">Save changes</button></div>`:''}
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Role-Based Access (RBAC)</h3></div>
+        <div class="panel-body">
+          <table class="rbac-table">
+            <thead><tr><th>Role</th><th>Fleet</th><th>Drivers</th><th>Trips</th><th>Fuel/Exp.</th><th>Analytics</th></tr></thead>
+            <tbody>
+            ${roles.map(r=>`<tr><td>${r}</td>${cols.map(c=>{
+              const p = PERMS[r][c];
+              return `<td>${p==='edit'?'<span class="tick">✓</span>':p==='view'?'view':'<span class="dash">–</span>'}</td>`;
+            }).join('')}</tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+function saveSettings(){
+  DB.settings.depot = $('#st_depot').value;
+  showToast('Settings saved.');
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+function openModal(html){
+  $('#modalBody').innerHTML = html;
+  $('#modalOverlay').classList.add('open');
+}
+function closeModal(){
+  $('#modalOverlay').classList.remove('open');
+}
+$('#modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') closeModal(); });
+</script>
+</body>
+</html>

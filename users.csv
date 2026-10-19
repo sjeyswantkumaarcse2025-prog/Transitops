@@ -1,0 +1,5 @@
+id,name,email,password_hash,role
+1,Raven K.,manager@transitops.in,pbkdf2:sha256:mock_hash,Fleet Manager
+2,Alex Driver,driver.alex@transitops.in,pbkdf2:sha256:mock_hash,Driver
+3,Safety Admin,safety@transitops.in,pbkdf2:sha256:mock_hash,Safety Officer
+4,Finance lead,analyst@transitops.in,pbkdf2:sha256:mock_hash,Financial Analyst

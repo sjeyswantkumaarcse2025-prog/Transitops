@@ -1,0 +1,6 @@
+id,source,destination,cargo_weight_kg,planned_distance_km,status,final_odometer,fuel_consumed_l,revenue,created_at,vehicle_id,driver_id
+1,Gandhinagar Depot,Ahmedabad Hub,3500.0,120.0,Dispatched,,,,2026-07-12 06:19:18.482436,2,3
+2,Ahmedabad Hub,Sanand Warehouse,450.0,38.0,Completed,74038.0,4.5,8500.0,2026-07-12 06:19:18.482445,1,1
+3,Gandhinagar Depot,Kalol Depot,600.0,52.0,Dispatched,,,,2026-07-12 06:19:18.482448,6,5
+4,Vatva Industrial Area,Sanand Warehouse,2000.0,44.0,Draft,,,,2026-07-12 06:19:18.482450,5,4
+5,Mansa,Kalol Depot,0.0,0.0,Cancelled,,,,2026-07-12 06:19:18.482452,1,1
